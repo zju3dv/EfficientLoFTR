@@ -1,0 +1,7 @@
+name: eloftr
+channels:
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.8
+  - pip
