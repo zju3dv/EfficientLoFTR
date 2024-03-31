@@ -9,7 +9,8 @@ import torch.nn.functional as F
 from einops.einops import rearrange
 
 if hasattr(F, 'scaled_dot_product_attention'):
-    FLASH_AVAILABLE = False
+    FLASH_AVAILABLE = True
+    from torch.backends.cuda import sdp_kernel
 else:
     FLASH_AVAILABLE = False
 
@@ -21,11 +22,12 @@ def crop_feature(query, key, value, x_mask, source_mask):
     return query, key, value, mask_h0, mask_w0
 
 def pad_feature(m, mask_h0, mask_w0, x_mask):
-    m = m.view(bs, mask_h0, mask_w0, self.nhead, self.dim)
+    bs, L, H, D = m.size()
+    m = m.view(bs, mask_h0, mask_w0, H, D)
     if mask_h0 != x_mask.size(-2):
-        m = torch.cat([m, torch.zeros(m.size(0), x_mask.size(-2)-mask_h0, x_mask.size(-1), self.nhead, self.dim, device=m.device, dtype=m.dtype)], dim=1)
+        m = torch.cat([m, torch.zeros(m.size(0), x_mask.size(-2)-mask_h0, x_mask.size(-1), H, D, device=m.device, dtype=m.dtype)], dim=1)
     elif mask_w0 != x_mask.size(-1):
-        m = torch.cat([m, torch.zeros(m.size(0), x_mask.size(-2), x_mask.size(-1)-mask_w0, self.nhead, self.dim, device=m.device, dtype=m.dtype)], dim=2)
+        m = torch.cat([m, torch.zeros(m.size(0), x_mask.size(-2), x_mask.size(-1)-mask_w0, H, D, device=m.device, dtype=m.dtype)], dim=2)
     return m
 
 class Attention(Module):
@@ -39,7 +41,8 @@ class Attention(Module):
         assert q_mask is None and kv_mask is None, "Not support generalized attention mask yet."
         if self.flash:
             args = [x.contiguous() for x in [query, key, value]]
-            out = F.scaled_dot_product_attention(*args)
+            with sdp_kernel(enable_math= False, enable_flash= True, enable_mem_efficient= False):
+                out = F.scaled_dot_product_attention(*args)
         else:
             QK = torch.einsum("nlhd,nshd->nlsh", query, key)
     
@@ -91,6 +94,6 @@ class Attention(Module):
         else: # for faster trainning with padding mask while batch size > 1
             m_list = []
             for i in range(bs):
-                m_list.append(self._forward(query[i:i+1], key[i:i+1], value[i:i+1], q_mask=x_mask[i:i+1], kv_mask=source_mask[i:i+1]))
+                m_list.append(self._forward(query[i:i+1], key[i:i+1], value[i:i+1], q_mask=q_mask[i:i+1], kv_mask=kv_mask[i:i+1]))
             m = torch.cat(m_list, dim=0)
         return m

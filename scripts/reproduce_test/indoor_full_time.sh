@@ -29,4 +29,5 @@ python ./test.py \
     --scannetX '640' \
     --scannetY '480' \
     --rmbd 0 \
+    --thr 0.1 \
     --ransac_times 1

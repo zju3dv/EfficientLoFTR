@@ -24,6 +24,7 @@ class ScanNetDataset(utils.data.Dataset):
                  augment_fn=None,
                  pose_dir=None,
                  img_resize=None,
+                 fp16=False,
                  **kwargs):
         """Manage one scene of ScanNet Dataset.
         Args:
@@ -51,6 +52,7 @@ class ScanNetDataset(utils.data.Dataset):
         # for training LoFTR
         self.augment_fn = augment_fn if mode == 'train' else None
         
+        self.fp16 = fp16
         self.img_resize = img_resize
 
     def __len__(self):
@@ -101,6 +103,10 @@ class ScanNetDataset(utils.data.Dataset):
         h_new, w_new = self.img_resize[1], self.img_resize[0]
         scale0 = torch.tensor([640/w_new, 480/h_new], dtype=torch.float)
         scale1 = torch.tensor([640/w_new, 480/h_new], dtype=torch.float)
+
+        if self.fp16:
+            image0, image1, depth0, depth1, scale0, scale1 = map(lambda x: x.half(),
+                                                                 [image0, image1, depth0, depth1, scale0, scale1])
 
         data = {
             'image0': image0,   # (1, h, w)

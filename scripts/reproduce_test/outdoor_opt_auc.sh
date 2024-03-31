@@ -29,6 +29,7 @@ python ./test.py \
     --benchmark \
     --megasize $size \
     --npe \
+    --thr 20 \
     --deter \
     --ransac_times 5
 # Following the RoMa protocol, we repeat RANSAC 5 times to enhance robustness; however, this increases script runtime.

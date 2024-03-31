@@ -12,8 +12,6 @@ n_nodes=1  # mannually keep this the same with --nodes
 n_gpus_per_node=-1
 torch_num_workers=4
 batch_size=1  # per gpu
-comment='reproduce_eloft_full_scannet'
-METHOD='loftr'
 
 ckpt_path="weights/eloftr_outdoor.ckpt"
 
@@ -31,6 +29,7 @@ python ./test.py \
     --scannetX '640' \
     --scannetY '480' \
     --rmbd 1 \
+    --thr 20 \
     --deter \
     --ransac_times 5
 # Following the RoMa protocol, we repeat RANSAC 5 times to enhance robustness; however, this increases script runtime.

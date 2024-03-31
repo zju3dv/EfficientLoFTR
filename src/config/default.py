@@ -7,9 +7,10 @@ _CN.LOFTR.BACKBONE_TYPE = 'RepVGG'
 _CN.LOFTR.ALIGN_CORNER = False
 _CN.LOFTR.RESOLUTION = (8, 1)
 _CN.LOFTR.FINE_WINDOW_SIZE = 8  # window_size in fine_level, must be even
-_CN.LOFTR.FP16 = False
+_CN.LOFTR.MP = False
 _CN.LOFTR.REPLACE_NAN = False
 _CN.LOFTR.EVAL_TIMES = 1
+_CN.LOFTR.HALF = False
 
 # 1. LoFTR-backbone (local feature CNN) config
 _CN.LOFTR.BACKBONE = CN()
@@ -29,7 +30,7 @@ _CN.LOFTR.COARSE.NPE = None
 
 # 3. Coarse-Matching config
 _CN.LOFTR.MATCH_COARSE = CN()
-_CN.LOFTR.MATCH_COARSE.THR = 0.1
+_CN.LOFTR.MATCH_COARSE.THR = 0.2 # recommend 0.2 for full model and 25 for optimized model
 _CN.LOFTR.MATCH_COARSE.BORDER_RM = 2
 _CN.LOFTR.MATCH_COARSE.DSMAX_TEMPERATURE = 0.1
 _CN.LOFTR.MATCH_COARSE.TRAIN_COARSE_PERCENT = 0.2  # training tricks: save GPU memory

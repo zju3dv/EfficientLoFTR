@@ -16,6 +16,8 @@ class FineMatching(nn.Module):
         self.config = config
         self.local_regress_temperature = config['match_fine']['local_regress_temperature']
         self.local_regress_slicedim = config['match_fine']['local_regress_slicedim']
+        self.fp16 = config['half']
+
     def forward(self, feat_0, feat_1, data):
         """
         Args:
@@ -36,7 +38,6 @@ class FineMatching(nn.Module):
         # corner case: if no coarse matches found
         if M == 0:
             assert self.training == False, "M is always > 0 while training, see coarse_matching.py"
-            logger.warning('No matches found in coarse-level.')
             data.update({
                 'conf_matrix_f': torch.empty(0, WW, WW, device=feat_0.device),
                 'mkpts0_f': data['mkpts0_c'],
@@ -51,7 +52,6 @@ class FineMatching(nn.Module):
             feat_f0, feat_f1 = feat_f0 / C**.5, feat_f1 / C**.5
             conf_matrix_f = torch.einsum('mlc,mrc->mlr', feat_f0, feat_f1)
             conf_matrix_ff = torch.einsum('mlc,mrc->mlr', feat_ff0, feat_ff1 / (self.local_regress_slicedim)**.5)
-            del feat_f0, feat_f1
 
         softmax_matrix_f = F.softmax(conf_matrix_f, 1) * F.softmax(conf_matrix_f, 2)
         softmax_matrix_f = softmax_matrix_f.reshape(M, self.WW, self.W+2, self.W+2)
@@ -61,15 +61,12 @@ class FineMatching(nn.Module):
         if self.training:
             data.update({'sim_matrix_ff': conf_matrix_ff})
             data.update({'conf_matrix_f': softmax_matrix_f})
-        del conf_matrix_f
 
         # compute pixel-level absolute kpt coords
         self.get_fine_ds_match(softmax_matrix_f, data)
-        del softmax_matrix_f
 
         # generate seconde-stage 3x3 grid
         idx_l, idx_r = data['idx_l'], data['idx_r']
-        del data['idx_l'], data['idx_r']
         m_ids = torch.arange(M, device=idx_l.device, dtype=torch.long).unsqueeze(-1)
         m_ids = m_ids[:len(data['mconf'])]
         idx_r_iids, idx_r_jids = idx_r // W, idx_r % W
@@ -117,7 +114,6 @@ class FineMatching(nn.Module):
         mkpts0_f = mkpts0_c
         mkpts1_f = mkpts1_c + (coords_normed * (3 // 2) * scale1)
 
-        del data['mkpts0_c'], data['mkpts1_c']
         data.update({
             "mkpts0_f": mkpts0_f,
             "mkpts1_f": mkpts1_f
@@ -135,7 +131,10 @@ class FineMatching(nn.Module):
 
         data.update({'idx_l': idx_l, 'idx_r': idx_r})
 
-        grid = create_meshgrid(W, W, False, conf_matrix.device) - W // 2 + 0.5
+        if self.fp16:
+            grid = create_meshgrid(W, W, False, conf_matrix.device, dtype=data['scale0'].dtype) - W // 2 + 0.5 # kornia >= 0.5.1
+        else:
+            grid = create_meshgrid(W, W, False, conf_matrix.device) - W // 2 + 0.5
         grid = grid.reshape(1, -1, 2).expand(m, -1, -1)
         delta_l = torch.gather(grid, 1, idx_l.unsqueeze(-1).expand(-1, -1, 2))
         delta_r = torch.gather(grid, 1, idx_r.unsqueeze(-1).expand(-1, -1, 2))
@@ -149,7 +148,6 @@ class FineMatching(nn.Module):
         else: # scale0 is a float
             mkpts0_f = (data['mkpts0_c'][:,None,:] + (delta_l * scale0)).reshape(-1, 2)
             mkpts1_f = (data['mkpts1_c'][:,None,:] + (delta_r * scale1)).reshape(-1, 2)
-        del data['mkpts0_c'], data['mkpts1_c']
         
         data.update({
             "mkpts0_c": mkpts0_f,

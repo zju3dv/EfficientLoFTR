@@ -21,11 +21,11 @@ cfg.LOFTR.MATCH_COARSE.SPARSE_SPVS = True
 cfg.LOFTR.RESOLUTION = (8, 1)
 cfg.LOFTR.FINE_WINDOW_SIZE = 8  # window_size in fine_level, must be even
 cfg.LOFTR.ALIGN_CORNER = False
-cfg.LOFTR.FP16 = True
+cfg.LOFTR.MP = True
 cfg.LOFTR.REPLACE_NAN = True
 cfg.LOFTR.EVAL_TIMES = 5
 cfg.LOFTR.COARSE.NO_FLASH = True # Not use Flash-Attention just for reproducing paper timing
-cfg.LOFTR.MATCH_COARSE.THR = 0.1
+cfg.LOFTR.MATCH_COARSE.THR = 0.2 # recommend 0.2 for full model and 25 for optimized model
 cfg.LOFTR.MATCH_FINE.LOCAL_REGRESS_TEMPERATURE = 10.0
 cfg.LOFTR.MATCH_FINE.LOCAL_REGRESS_SLICEDIM = 8
 

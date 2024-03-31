@@ -171,10 +171,8 @@ class CoarseMatching(nn.Module):
         # this only works when at most one `True` in each row
         mask_v, all_j_ids = mask.max(dim=2)
         b_ids, i_ids = torch.where(mask_v)
-        del mask, mask_v
         j_ids = all_j_ids[b_ids, i_ids]
         mconf = conf_matrix[b_ids, i_ids, j_ids]
-        del conf_matrix, all_j_ids
 
         # 4. Random sampling of training samples for fine-level LoFTR
         # (optional) pad samples with gt coarse-level matches

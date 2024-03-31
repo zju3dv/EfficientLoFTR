@@ -251,6 +251,7 @@ class MultiSceneDataModule(pl.LightningDataModule):
                                    augment_fn=augment_fn,
                                    pose_dir=pose_dir,
                                    img_resize=(self.scan_img_resizeX, self.scan_img_resizeY),
+                                   fp16 = self.fp16,
                                    ))
             elif data_source == 'MegaDepth':
                 datasets.append(

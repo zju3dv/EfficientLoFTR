@@ -51,6 +51,10 @@ def parse_args():
         '--rmbd', type=int, default=None, help='remove border matches')
     parser.add_argument(
         '--deter', action='store_true', default=False, help='use deterministic mode for testing')
+    parser.add_argument(
+        '--half', action='store_true', default=False, help='pure16')
+    parser.add_argument(
+        '--flash', action='store_true', default=False, help='flash')
 
     parser = pl.Trainer.add_argparse_args(parser)
     return parser.parse_args()
@@ -109,7 +113,17 @@ if __name__ == '__main__':
             config.TRAINER.RANSAC_PIXEL_THR = 2.0
 
     if args.fp32:
-        config.LOFTR.FP16 = False
+        config.LOFTR.MP = False
+
+    if args.half:
+        config.LOFTR.HALF = True
+        config.DATASET.FP16 = True
+    else:
+        config.LOFTR.HALF = False
+        config.DATASET.FP16 = False
+
+    if args.flash:
+        config.LOFTR.COARSE.NO_FLASH = False
 
     loguru_logger.info(f"Args and config initialized!")
 

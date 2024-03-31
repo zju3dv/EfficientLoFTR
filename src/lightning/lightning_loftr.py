@@ -67,6 +67,9 @@ class PL_LoFTR(pl.LightningModule):
         # Testing
         self.warmup = False
         self.reparameter = False
+        self.start_event = torch.cuda.Event(enable_timing=True)
+        self.end_event = torch.cuda.Event(enable_timing=True)
+        self.total_ms = 0
 
     def configure_optimizers(self):
         # FIXME: The scheduler did not work properly when `--resume_from_checkpoint`
@@ -102,7 +105,7 @@ class PL_LoFTR(pl.LightningModule):
                 compute_supervision_coarse(batch, self.config)
         
         with self.profiler.profile("LoFTR"):
-            with torch.autocast(enabled=self.config.LOFTR.FP16, device_type='cuda'):
+            with torch.autocast(enabled=self.config.LOFTR.MP, device_type='cuda'):
                 self.matcher(batch)
         
         with self.profiler.profile("Compute fine supervision"):
@@ -110,7 +113,7 @@ class PL_LoFTR(pl.LightningModule):
                 compute_supervision_fine(batch, self.config, self.logger)
             
         with self.profiler.profile("Compute losses"):
-            with torch.autocast(enabled=self.config.LOFTR.FP16, device_type='cuda'):
+            with torch.autocast(enabled=self.config.LOFTR.MP, device_type='cuda'):
                 self.loss(batch)
     
     def _compute_metrics(self, batch):
@@ -221,22 +224,36 @@ class PL_LoFTR(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         if (self.config.LOFTR.BACKBONE_TYPE == 'RepVGG') and not self.reparameter:
             self.matcher = reparameter(self.matcher)
+            if self.config.LOFTR.HALF:
+                self.matcher = self.matcher.eval().half()
             self.reparameter = True
-        
+
         if not self.warmup:
-            with torch.autocast(enabled=self.config.LOFTR.FP16, device_type='cuda'):
+            if self.config.LOFTR.HALF:
                 for i in range(50):
                     self.matcher(batch)
+            else:
+                with torch.autocast(enabled=self.config.LOFTR.MP, device_type='cuda'):
+                    for i in range(50):
+                        self.matcher(batch)
             self.warmup = True
             torch.cuda.synchronize()
 
-        with torch.autocast(enabled=self.config.LOFTR.FP16, device_type='cuda'):
-            with self.profiler.profile("LoFTR"):
+        if self.config.LOFTR.HALF:
+            self.start_event.record()
+            self.matcher(batch)
+            self.end_event.record()
+            torch.cuda.synchronize()
+            self.total_ms += self.start_event.elapsed_time(self.end_event)
+        else:
+            with torch.autocast(enabled=self.config.LOFTR.MP, device_type='cuda'):
+                self.start_event.record()
                 self.matcher(batch)
+                self.end_event.record()
+                torch.cuda.synchronize()
+                self.total_ms += self.start_event.elapsed_time(self.end_event)
 
-        with self.profiler.profile("Compute metrics"):
-            ret_dict, rel_pair_names = self._compute_metrics(batch)
-
+        ret_dict, rel_pair_names = self._compute_metrics(batch)
         return ret_dict
 
     def test_epoch_end(self, outputs):
@@ -246,6 +263,6 @@ class PL_LoFTR(pl.LightningModule):
 
         # [{key: [{...}, *#bs]}, *#batch]
         if self.trainer.global_rank == 0:
-            print(self.profiler.summary())
+            print('Averaged Matching time over 1500 pairs: {:.2f} ms'.format(self.total_ms / 1500))
             val_metrics_4tb = aggregate_metrics(metrics, self.config.TRAINER.EPI_ERR_THR, config=self.config)
             logger.info('\n' + pprint.pformat(val_metrics_4tb))

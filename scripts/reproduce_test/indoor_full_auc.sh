@@ -29,6 +29,7 @@ python ./test.py \
     --scannetX '640' \
     --scannetY '480' \
     --rmbd 0 \
+    --thr 0.1 \
     --deter \
     --ransac_times 5
 # Following the RoMa protocol, we repeat RANSAC 5 times to enhance robustness; however, this increases script runtime.
