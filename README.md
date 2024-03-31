@@ -13,7 +13,7 @@ https://github.com/zju3dv/EfficientLoFTR/assets/69951260/40890d21-180e-4e70-aeba
 - [x] Inference code and pretrained models
 - [x] Code for reproducing the test-set results
 - [ ] Add options of flash-attention and torch.compiler for better performance
-- [ ] jupyter notebook demo for matching a pair of images
+- [x] jupyter notebook demo for matching a pair of images
 - [ ] Training code
 
 ## Installation

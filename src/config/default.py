@@ -26,7 +26,7 @@ _CN.LOFTR.COARSE.AGG_SIZE0 = 4
 _CN.LOFTR.COARSE.AGG_SIZE1 = 4
 _CN.LOFTR.COARSE.NO_FLASH = False
 _CN.LOFTR.COARSE.ROPE = True
-_CN.LOFTR.COARSE.NPE = None
+_CN.LOFTR.COARSE.NPE = None # [832, 832, long_side, long_side] Suggest setting based on the long side of the input image, especially when the long_side > 832
 
 # 3. Coarse-Matching config
 _CN.LOFTR.MATCH_COARSE = CN()

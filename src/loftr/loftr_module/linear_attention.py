@@ -31,18 +31,22 @@ def pad_feature(m, mask_h0, mask_w0, x_mask):
     return m
 
 class Attention(Module):
-    def __init__(self, no_flash=False, nhead=8, dim=256):
+    def __init__(self, no_flash=False, nhead=8, dim=256, fp32=False):
         super().__init__()
         self.flash = FLASH_AVAILABLE and not no_flash
         self.nhead = nhead
         self.dim = dim
+        self.fp32 = fp32
         
     def attention(self, query, key, value, q_mask=None, kv_mask=None):
         assert q_mask is None and kv_mask is None, "Not support generalized attention mask yet."
-        if self.flash:
+        if self.flash and not self.fp32:
             args = [x.contiguous() for x in [query, key, value]]
             with sdp_kernel(enable_math= False, enable_flash= True, enable_mem_efficient= False):
                 out = F.scaled_dot_product_attention(*args)
+        elif self.flash:
+            args = [x.contiguous() for x in [query, key, value]]
+            out = F.scaled_dot_product_attention(*args)
         else:
             QK = torch.einsum("nlhd,nshd->nlsh", query, key)
     

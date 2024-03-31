@@ -132,7 +132,7 @@ class FineMatching(nn.Module):
         data.update({'idx_l': idx_l, 'idx_r': idx_r})
 
         if self.fp16:
-            grid = create_meshgrid(W, W, False, conf_matrix.device, dtype=data['scale0'].dtype) - W // 2 + 0.5 # kornia >= 0.5.1
+            grid = create_meshgrid(W, W, False, conf_matrix.device, dtype=torch.float16) - W // 2 + 0.5 # kornia >= 0.5.1
         else:
             grid = create_meshgrid(W, W, False, conf_matrix.device) - W // 2 + 0.5
         grid = grid.reshape(1, -1, 2).expand(m, -1, -1)
