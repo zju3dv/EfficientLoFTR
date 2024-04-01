@@ -10,6 +10,20 @@ from src.utils.misc import detect_NaN
 
 from loguru import logger
 
+def reparameter(matcher):
+    module = matcher.backbone.layer0
+    if hasattr(module, 'switch_to_deploy'):
+        module.switch_to_deploy()
+    for modules in [matcher.backbone.layer1, matcher.backbone.layer2, matcher.backbone.layer3]:
+        for module in modules:
+            if hasattr(module, 'switch_to_deploy'):
+                module.switch_to_deploy()
+    for modules in [matcher.fine_preprocess.layer2_outconv2, matcher.fine_preprocess.layer1_outconv2]:
+        for module in modules:
+            if hasattr(module, 'switch_to_deploy'):
+                module.switch_to_deploy()
+    return matcher
+
 class LoFTR(nn.Module):
     def __init__(self, config, profiler=None):
         super().__init__()
