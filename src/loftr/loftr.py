@@ -6,7 +6,7 @@ from .backbone import build_backbone
 from .loftr_module import LocalFeatureTransformer, FinePreprocess
 from .utils.coarse_matching import CoarseMatching
 from .utils.fine_matching import FineMatching
-from src.utils.misc import detect_NaN
+from ..utils.misc import detect_NaN
 
 from loguru import logger
 
