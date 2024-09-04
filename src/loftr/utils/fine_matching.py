@@ -17,6 +17,7 @@ class FineMatching(nn.Module):
         self.local_regress_temperature = config['match_fine']['local_regress_temperature']
         self.local_regress_slicedim = config['match_fine']['local_regress_slicedim']
         self.fp16 = config['half']
+        self.validate = False
 
     def forward(self, feat_0, feat_1, data):
         """
@@ -46,7 +47,7 @@ class FineMatching(nn.Module):
             return
 
         # compute pixel-level confidence matrix
-        with torch.autocast(enabled=True, device_type='cuda'):
+        with torch.autocast(enabled=True if not (self.training or self.validate) else False, device_type='cuda'):
             feat_f0, feat_f1 = feat_0[...,:-self.local_regress_slicedim], feat_1[...,:-self.local_regress_slicedim]
             feat_ff0, feat_ff1 = feat_0[...,-self.local_regress_slicedim:], feat_1[...,-self.local_regress_slicedim:]
             feat_f0, feat_f1 = feat_f0 / C**.5, feat_f1 / C**.5
@@ -58,7 +59,7 @@ class FineMatching(nn.Module):
         softmax_matrix_f = softmax_matrix_f[...,1:-1,1:-1].reshape(M, self.WW, self.WW)
 
         # for fine-level supervision
-        if self.training:
+        if self.training or self.validate:
             data.update({'sim_matrix_ff': conf_matrix_ff})
             data.update({'conf_matrix_f': softmax_matrix_f})
 

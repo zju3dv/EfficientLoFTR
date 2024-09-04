@@ -30,7 +30,8 @@ class AG_RoPE_EncoderLayer(nn.Module):
         # aggregate and position encoding
         self.aggregate = nn.Conv2d(d_model, d_model, kernel_size=agg_size0, padding=0, stride=agg_size0, bias=False, groups=d_model) if self.agg_size0 != 1 else nn.Identity()
         self.max_pool = torch.nn.MaxPool2d(kernel_size=self.agg_size1, stride=self.agg_size1) if self.agg_size1 != 1 else nn.Identity()
-        self.rope_pos_enc = RoPEPositionEncodingSine(d_model, max_shape=(256, 256), npe=npe, ropefp16=True)
+        if self.rope:
+            self.rope_pos_enc = RoPEPositionEncodingSine(d_model, max_shape=(256, 256), npe=npe, ropefp16=True)
         
         # multi-head attention
         self.q_proj = nn.Linear(d_model, d_model, bias=False)
@@ -62,7 +63,6 @@ class AG_RoPE_EncoderLayer(nn.Module):
         H1, W1 = source.size(-2), source.size(-1)
 
         # Aggragate feature
-        assert x_mask is None and source_mask is None
         query, source = self.norm1(self.aggregate(x).permute(0,2,3,1)), self.norm1(self.max_pool(source).permute(0,2,3,1)) # [N, H, W, C]
         if x_mask is not None:
             x_mask, source_mask = map(lambda x: self.max_pool(x.float()).bool(), [x_mask, source_mask])

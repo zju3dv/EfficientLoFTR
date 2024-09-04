@@ -10,8 +10,8 @@ import pytorch_lightning as pl
 from matplotlib import pyplot as plt
 
 from src.loftr import LoFTR
-# from src.loftr.utils.supervision import compute_supervision_coarse, compute_supervision_fine
-# from src.losses.loftr_loss import LoFTRLoss
+from src.loftr.utils.supervision import compute_supervision_coarse, compute_supervision_fine
+from src.losses.loftr_loss import LoFTRLoss
 from src.optimizers import build_optimizer, build_scheduler
 from src.utils.metrics import (
     compute_symmetrical_epipolar_errors,
@@ -56,7 +56,7 @@ class PL_LoFTR(pl.LightningModule):
 
         # Matcher: LoFTR
         self.matcher = LoFTR(config=_config['loftr'], profiler=self.profiler)
-        # self.loss = LoFTRLoss(_config)
+        self.loss = LoFTRLoss(_config)
 
         # Pretrained weights
         if pretrained_ckpt:
@@ -157,7 +157,10 @@ class PL_LoFTR(pl.LightningModule):
             self.logger.experiment.add_scalar(
                 'train/avg_loss_on_epoch', avg_loss,
                 global_step=self.current_epoch)
-    
+
+    def on_validation_epoch_start(self):
+        self.matcher.fine_matching.validate = True
+
     def validation_step(self, batch, batch_idx):
         self._trainval_inference(batch)
         
@@ -175,6 +178,7 @@ class PL_LoFTR(pl.LightningModule):
         }
         
     def validation_epoch_end(self, outputs):
+        self.matcher.fine_matching.validate = False
         # handle multiple validation sets
         multi_outputs = [outputs] if not isinstance(outputs[0], (list, tuple)) else outputs
         multi_val_metrics = defaultdict(list)
