@@ -14,7 +14,7 @@ https://github.com/zju3dv/EfficientLoFTR/assets/69951260/40890d21-180e-4e70-aeba
 - [x] Code for reproducing the test-set results
 - [ ] Add options of flash-attention and torch.compiler for better performance
 - [x] jupyter notebook demo for matching a pair of images
-- [ ] Training code
+- [x] Training code
 
 ## Installation
 ```shell
