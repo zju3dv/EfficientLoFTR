@@ -53,10 +53,12 @@ bash scripts/reproduce_test/indoor_opt_auc.sh
 ```
 
 ## Training
+```shell
 conda env create -f environment_training.yaml  # used a different version of pytorch, maybe slightly different from the inference environment
 pip install -r requirements.txt
 conda activate eloftr_training
 bash scripts/reproduce_train/eloftr_outdoor.sh eloftr_outdoor
+```
 
 ## Citation
 
