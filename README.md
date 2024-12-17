@@ -5,7 +5,7 @@
 
 > Efficient LoFTR: Semi-Dense Local Feature Matching with Sparse-Like Speed  
 > [Yifan Wang](https://github.com/wyf2020)<sup>\*</sup>, [Xingyi He](https://github.com/hxy-123)<sup>\*</sup>, [Sida Peng](https://pengsida.net), [Dongli Tan](https://github.com/Cuistiano), [Xiaowei Zhou](http://xzhou.me)  
-> CVPR 2024
+> CVPR 2024 Highlight
 
 https://github.com/zju3dv/EfficientLoFTR/assets/69951260/40890d21-180e-4e70-aeba-219178b0d824
 
@@ -25,11 +25,11 @@ pip install -r requirements.txt
 ```
 The test and training can be downloaded by [download link](https://drive.google.com/drive/folders/1DOcOPZb3-5cWxLqn256AhwUVjBPifhuf?usp=sharing) provided by LoFTR
 
-We provide the our pretrained model in [download link](https://drive.google.com/drive/folders/1GOw6iVqsB-f1vmG6rNmdCcgwfB4VZ7_Q?usp=sharing)
+We provide our pretrained model in [download link](https://drive.google.com/drive/folders/1GOw6iVqsB-f1vmG6rNmdCcgwfB4VZ7_Q?usp=sharing)
 
 
 ## Reproduce the testing results with pytorch-lightning
-You need to setup the testing subsets of ScanNet and MegaDepth first. We create symlinks from the previously downloaded datasets to `data/{{dataset}}/test`.
+You need to first set up the testing subsets of ScanNet and MegaDepth. We create symlinks from the previously downloaded datasets to `data/{{dataset}}/test`.
 
 ```shell
 # set up symlinks
