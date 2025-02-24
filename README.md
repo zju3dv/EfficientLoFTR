@@ -9,6 +9,8 @@
 
 https://github.com/zju3dv/EfficientLoFTR/assets/69951260/40890d21-180e-4e70-aeba-219178b0d824
 
+## 🌟News🌟
+To enhance multi-modality matching with EfficientLoFTR and improve its applicability to UAV localization, autonomous driving, and beyond, check out our latest work, [MatchAnything](https://github.com/zju3dv/MatchAnything)! Try our demo and see it in action!
 ## TODO List
 - [x] Inference code and pretrained models
 - [x] Code for reproducing the test-set results
