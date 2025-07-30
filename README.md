@@ -10,10 +10,10 @@
 https://github.com/zju3dv/EfficientLoFTR/assets/69951260/40890d21-180e-4e70-aeba-219178b0d824
 
 ## 🌟News🌟
-[July 2025] EfficientLoFTR is now officially integrated into the 🤗 Hugging Face Transformers (thanks to [@sbucaille](https://github.com/sbucaille)!).
-You can easily run inference with just a few lines of code using `pip install transformers`. ([model card](https://huggingface.co/zju-community/efficientloftr))
+<b>[2025-02]</b> To enhance multi-modality matching with EfficientLoFTR and improve its applicability to UAV localization, autonomous driving, and beyond, check out our latest work, [MatchAnything](https://github.com/zju3dv/MatchAnything)! Try our demo and see it in action!
 
-[Feb 2025] To enhance multi-modality matching with EfficientLoFTR and improve its applicability to UAV localization, autonomous driving, and beyond, check out our latest work, [MatchAnything](https://github.com/zju3dv/MatchAnything)! Try our demo and see it in action!
+<b>[2025-07]</b> EfficientLoFTR is now part of 🤗 [Hugging Face Transformers](https://github.com/huggingface/transformers) (credit to [sbucaille](https://github.com/sbucaille)!).
+You can run inference with a few lines of code using `pip install transformers`. [[model card](https://huggingface.co/zju-community/efficientloftr)]
 ## TODO List
 - [x] Inference code and pretrained models
 - [x] Code for reproducing the test-set results
@@ -77,7 +77,7 @@ with torch.no_grad():
 </details>
 
 <details>
-<summary><b>[Advanced Usage]</b></summary>
+<summary><b>[Advanced Usage](with <a href="https://github.com/zju3dv/EfficientLoFTR/blob/089f6665722398007908977891f47f2c002f2aec/notebooks/demo_single_pair.ipynb">jupyter notebook</a>)</b></summary>
 
 ```python
 import torch
@@ -167,9 +167,7 @@ fig = make_matching_figure(img0_raw, img1_raw, mkpts0, mkpts1, color, text=text)
 
 <details>
 <summary><b>[Using Transformers]</b></summary>
-EfficientLoFTR is now officially integrated into the 🤗 Hugging Face Transformers (thanks to [@sbucaille](https://github.com/sbucaille)!).
-You can easily run inference with just a few lines of code using `pip install transformers`. ([model card](https://huggingface.co/zju-community/efficientloftr))
-Note: The default processor resizes images to a resolution of 480x640 pixels.
+Note: The default AutoImageProcessor resizes images to a resolution of 480x640 pixels. If you need high-resolution matching, you should modify the default config or refer to basic/advanced usage.
 
 ```python
 from transformers import AutoImageProcessor, AutoModel
@@ -224,8 +222,6 @@ processor.visualize_keypoint_matching(images, outputs)
 For more details, visit the [Hugging Face model card](https://huggingface.co/zju-community/efficientloftr).
 
 </details>
-
-An jupyter notebook about advanced usage is given in notebooks/demo_single_pair.ipynb.
 
 
 ## Reproduce the testing results
